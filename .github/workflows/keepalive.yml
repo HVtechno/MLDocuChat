@@ -1,0 +1,46 @@
+name: keepalive-and-backup
+
+# Two jobs on one schedule:
+#  1. keepalive — pings the backend so the free Supabase project never
+#     hits the 7-day inactivity pause.
+#  2. backup — nightly pg_dump to a workflow artifact, since the free
+#     tier has no automatic backups.
+#
+# Required repo secrets (Settings -> Secrets -> Actions):
+#   HEALTHCHECK_URL       e.g. https://your-backend/health
+#   SUPABASE_DB_URL       the Postgres connection string (Project Settings -> Database)
+
+on:
+  schedule:
+    - cron: "0 3 * * *"     # daily at 03:00 UTC
+  workflow_dispatch: {}      # allow manual runs
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.HEALTHCHECK_URL }}")
+          echo "Health check returned $code"
+          test "$code" = "200"
+
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install postgres client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump database
+        run: |
+          mkdir -p backups
+          stamp=$(date +%Y%m%d)
+          pg_dump "${{ secrets.SUPABASE_DB_URL }}" > "backups/db-$stamp.sql"
+          echo "Backup written: db-$stamp.sql ($(wc -l < backups/db-$stamp.sql) lines)"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup
+          path: backups/
+          retention-days: 14

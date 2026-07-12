@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    @apply bg-parchment text-ink font-body antialiased;
+  }
+  .dark body {
+    @apply bg-surface-dark text-slate-100;
+  }
+  /* Visible keyboard focus everywhere — accessibility floor. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-iris ring-offset-2 ring-offset-parchment;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Answer prose — tuned for reading, not for a marketing page. */
+  .prose-answer {
+    @apply text-[15px] leading-[1.7] text-ink;
+  }
+  .dark .prose-answer { @apply text-slate-200; }
+  .dark .prose-answer strong { @apply text-white; }
+  .dark .prose-answer code { @apply bg-slate-800 text-slate-200; }
+  .prose-answer p { @apply mb-3; }
+  .prose-answer ul { @apply mb-3 pl-5 list-disc; }
+  .prose-answer ol { @apply mb-3 pl-5 list-decimal; }
+  .prose-answer li { @apply mb-1; }
+  .prose-answer strong { @apply font-semibold text-ink; }
+  .prose-answer code {
+    @apply font-mono text-[13px] bg-slate-100 px-1 py-0.5 rounded;
+  }
+  .prose-answer h1, .prose-answer h2, .prose-answer h3 {
+    @apply font-display font-semibold text-ink mt-4 mb-2;
+  }
+}
+
+/* Scroll-reveal: sections fade and rise in when they enter view. */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-shown {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
