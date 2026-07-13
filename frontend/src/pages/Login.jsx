@@ -19,17 +19,20 @@ export function Login() {
 
   const submit = async () => {
     setError(null); setNotice(null); setBusy(true);
+    // Normalize: iOS autofill can add whitespace/caps that trip strict
+    // email validation ("string does not match the expected pattern").
+    const cleanEmail = email.trim().toLowerCase();
     try {
       if (mode === "login") {
-        await login(email, password);
+        await login(cleanEmail, password);
         navigate("/chat");
       } else {
-        const res = await signup(email, password, nickname.trim());
+        const res = await signup(cleanEmail, password, nickname.trim());
         if (res.needs_confirmation) {
           setNotice(res.message);
           setMode("login");
         } else {
-          await login(email, password);
+          await login(cleanEmail, password);
           navigate("/chat");
         }
       }
@@ -70,7 +73,11 @@ export function Login() {
             )}
             <Input
               label="Email"
-              type="email"
+              type="text"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
